@@ -14,6 +14,9 @@ public class Server {
     public void run() throws Exception {
         EventLoopGroup mainGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
+
+        AuthService.connect();
+
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(mainGroup, workerGroup)

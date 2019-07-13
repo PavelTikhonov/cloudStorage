@@ -52,4 +52,8 @@ public class Network {
         Object obj = in.readObject();
         return (AbstractMessage) obj;
     }
+
+    public static Socket getSocket() {
+        return socket;
+    }
 }
