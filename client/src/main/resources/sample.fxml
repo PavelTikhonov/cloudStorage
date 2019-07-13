@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+
+    <HBox fx:id="bottomPanel" VBox.vgrow="ALWAYS">
+
+        <VBox fx:id="localVBox" alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+            <Label text="Локальное хранилище"/>
+            <TableView fx:id="localStorage" editable="true" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="localFileName" text="Имя файла"/>
+                    <TableColumn fx:id="localFileSize" text="Размер файла"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+            <HBox VBox.vgrow="NEVER">
+                <Button fx:id="localBtnSendFile" text="Отправить файл"/>
+                <Button fx:id="localBtnDeleteFile" text="Удалить файл"/>
+                <Button fx:id="localBtnRefreshFile" onAction="#pressLocalRefreshBtn" text="Обновить"/>
+            </HBox>
+
+        </VBox>
+        <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+            <Label text="Облачное хранилище"/>
+            <TableView fx:id="cloudStorage" editable="true" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="cloudFileName" text="Имя файла"/>
+                    <TableColumn fx:id="cloudFileSize" text="Размер файла"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+            <HBox>
+                <Button fx:id="cloudBtnSendFile" text="Отправить файл"/>
+                <Button fx:id="cloudBtnDeleteFile" text="Удалить файл"/>
+                <Button fx:id="cloudBtnRefreshFile" text="Обновить"/>
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>
