@@ -1,10 +1,11 @@
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.*;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -15,23 +16,35 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 
 public class Controller implements Initializable {
-    public VBox upperPanel;
-    public TextField loginField;
-    public PasswordField passwordField;
-    public HBox bottomPanel;
-    public TableView<FileView> localStorage;
-    public TableView<FileView> cloudStorage;
-    public TableColumn<FileView, String> localFileName;
-    public TableColumn<FileView, String> localFileSize;
-    public TableColumn<FileView, String> cloudFileName;
-    public TableColumn<FileView, String> cloudFileSize;
-    public VBox localVBox;
+    public VBox rootPane;
+    @FXML
+    private GridPane upperPanel;
+    @FXML
+    private TextField loginField;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private HBox bottomPanel;
+    @FXML
+    private TableView<FileView> localStorage;
+    @FXML
+    private TableView<FileView> cloudStorage;
+    @FXML
+    private TableColumn<FileView, String> localFileName;
+    @FXML
+    private TableColumn<FileView, String> localFileSize;
+    @FXML
+    private TableColumn<FileView, String> cloudFileName;
+    @FXML
+    private TableColumn<FileView, String> cloudFileSize;
+    @FXML
+    private Label auth;
 
-    private boolean isAuthorized;
+    private String clientWay = "abs/client_storage/";
+    private String login;
 
     private ObservableList<FileView> localStorageData = FXCollections.observableArrayList(
             new FileView(" ", " ")
@@ -42,12 +55,12 @@ public class Controller implements Initializable {
     );
 
     private void initStorage(){
-        localFileName.setCellValueFactory(new PropertyValueFactory<FileView, String>("fileName"));
-        localFileSize.setCellValueFactory(new PropertyValueFactory<FileView, String>("fileSize"));
+        localFileName.setCellValueFactory(new PropertyValueFactory<>("fileName"));
+        localFileSize.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
         localStorage.setItems(localStorageData);
 
-        cloudFileName.setCellValueFactory(new PropertyValueFactory<FileView, String>("fileName"));
-        cloudFileSize.setCellValueFactory(new PropertyValueFactory<FileView, String>("fileSize"));
+        cloudFileName.setCellValueFactory(new PropertyValueFactory<>("fileName"));
+        cloudFileSize.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
         cloudStorage.setItems(cloudStorageData);
     }
 
@@ -66,12 +79,13 @@ public class Controller implements Initializable {
                     if(am instanceof AuthResult){
                         AuthResult ay = ((AuthResult) am);
                         if(ay.getResult().equals("ok")){
+                            this.login = loginField.getText();
                             setAuthorized();
                         }
                     }
                     if (am instanceof FileMessage) {
                         FileMessage fm = (FileMessage) am;
-                        Files.write(Paths.get("abs/client_storage/" + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
+                        Files.write(Paths.get(clientWay + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
                         refreshLocalFilesList();
                     }
                     if (am instanceof FileList) {
@@ -91,6 +105,7 @@ public class Controller implements Initializable {
             } catch (ClassNotFoundException | IOException e) {
                 e.printStackTrace();
             } finally {
+
                 Network.stop();
             }
         });
@@ -100,6 +115,8 @@ public class Controller implements Initializable {
     }
 
     private void setAuthorized() {
+        auth.setVisible(false);
+        auth.setManaged(false);
         upperPanel.setVisible(false);
         upperPanel.setManaged(false);
         bottomPanel.setVisible(true);
@@ -108,7 +125,7 @@ public class Controller implements Initializable {
 
     private void refreshLocalFilesList() {
         localStorage.getItems().clear();
-        File[] files = new File("abs/client_storage").listFiles();
+        File[] files = new File(clientWay).listFiles();
         if (files != null) {
             for (File f : files) {
                 localStorageData.add(new FileView(f.getName(), (String.valueOf(f.length())) + " B"));
@@ -137,7 +154,7 @@ public class Controller implements Initializable {
         if(fw != null) {
             try {
                 if(!fw.getFileName().equals("")) {
-                    Network.sendMsg(new FileMessage(Paths.get("abs/client_storage/" + fw.getFileName())));
+                    Network.sendMsg(new FileMessage(Paths.get(clientWay + fw.getFileName())));
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -149,7 +166,7 @@ public class Controller implements Initializable {
         FileView fw = localStorage.getSelectionModel().getSelectedItem();
         if(fw != null) {
             if(!fw.getFileName().equals("")) {
-                File file = new File("abs/client_storage/" + fw.getFileName());
+                File file = new File(clientWay + fw.getFileName());
                 file.delete();
                 refreshLocalFilesList();
             }
@@ -188,4 +205,9 @@ public class Controller implements Initializable {
             Network.sendMsg(new AuthRequest(loginField.getText(), passwordField.getText()));
         }
     }
+
+    public String getLogin() {
+        return login;
+    }
 }
+

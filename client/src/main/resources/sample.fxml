@@ -7,15 +7,58 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+<VBox fx:id="rootPane" alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+   <Label fx:id="auth" alignment="CENTER" contentDisplay="CENTER" text="Авторизация" VBox.vgrow="NEVER">
+      <font>
+         <Font size="24.0" />
+      </font>
+      <VBox.margin>
+         <Insets top="100.0" />
+      </VBox.margin>
+   </Label>
+   <GridPane fx:id="upperPanel" alignment="CENTER" hgap="10.0" vgap="10.0" VBox.vgrow="NEVER">
+     <columnConstraints>
+       <ColumnConstraints hgrow="NEVER" />
+       <ColumnConstraints hgrow="NEVER" />
+     </columnConstraints>
+     <rowConstraints>
+       <RowConstraints vgrow="NEVER" />
+       <RowConstraints vgrow="NEVER" />
+       <RowConstraints vgrow="NEVER" />
+     </rowConstraints>
+      <children>
+            <Label nodeOrientation="RIGHT_TO_LEFT" text="ЛОГИН" GridPane.valignment="CENTER">
+            <opaqueInsets>
+               <Insets />
+            </opaqueInsets>
+            <padding>
+               <Insets left="30.0" />
+            </padding>
+         </Label>
+            <TextField fx:id="loginField" alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" promptText="Логин" GridPane.columnIndex="2" GridPane.hgrow="NEVER" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+            <Label nodeOrientation="RIGHT_TO_LEFT" text="ПАРОЛЬ" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+            <padding>
+               <Insets left="20.0" />
+            </padding>
+         </Label>
+            <PasswordField fx:id="passwordField" alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" onAction="#tryToAuth" promptText="Пароль" GridPane.columnIndex="2" GridPane.hgrow="NEVER" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="NEVER" />
+           <Button alignment="CENTER" contentDisplay="RIGHT" nodeOrientation="LEFT_TO_RIGHT" onAction="#tryToAuth" text="Авторизоваться" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+      </children>
+      <VBox.margin>
+         <Insets bottom="100.0" left="100.0" right="100.0" top="30.0" />
+      </VBox.margin>
+   </GridPane>
 
     <HBox fx:id="bottomPanel" managed="false" visible="false" VBox.vgrow="ALWAYS">
 
-        <VBox fx:id="localVBox" alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
+        <VBox alignment="TOP_CENTER" HBox.hgrow="ALWAYS">
             <Label text="Локальное хранилище" />
             <TableView fx:id="localStorage" editable="true" VBox.vgrow="ALWAYS">
                 <columns>
@@ -51,46 +94,4 @@
             </HBox>
         </VBox>
     </HBox>
-   <AnchorPane>
-      <children>
-         <VBox alignment="TOP_RIGHT" nodeOrientation="LEFT_TO_RIGHT">
-            <children>
-                 <HBox>
-                     <Label alignment="CENTER" contentDisplay="CENTER" nodeOrientation="RIGHT_TO_LEFT" text="ЛОГИН">
-                     <opaqueInsets>
-                        <Insets />
-                     </opaqueInsets>
-                     <HBox.margin>
-                        <Insets />
-                     </HBox.margin>
-                     <padding>
-                        <Insets left="30.0" />
-                     </padding>
-                  </Label>
-                     <TextField fx:id="loginField" alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" promptText="Логин" />
-                 </HBox>
-                 <HBox alignment="TOP_RIGHT" nodeOrientation="LEFT_TO_RIGHT">
-                     <Label alignment="CENTER" contentDisplay="CENTER" nodeOrientation="RIGHT_TO_LEFT" text="ПАРОЛЬ">
-                     <padding>
-                        <Insets left="20.0" />
-                     </padding>
-                  </Label>
-                     <PasswordField fx:id="passwordField" alignment="CENTER" nodeOrientation="RIGHT_TO_LEFT" onAction="#tryToAuth" promptText="Пароль" />
-                 </HBox>
-               <HBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="100.0" prefWidth="200.0">
-                  <children>
-                       <Button alignment="CENTER" contentDisplay="RIGHT" nodeOrientation="LEFT_TO_RIGHT" onAction="#tryToAuth" text="Авторизоваться">
-                        <HBox.margin>
-                           <Insets />
-                        </HBox.margin>
-                     </Button>
-                  </children>
-               </HBox>
-            </children>
-         </VBox>
-      </children>
-      <VBox.margin>
-         <Insets left="200.0" />
-      </VBox.margin>
-   </AnchorPane>
 </VBox>

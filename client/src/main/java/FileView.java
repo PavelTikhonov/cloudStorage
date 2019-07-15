@@ -1,5 +1,4 @@
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 
 public class FileView {
 
@@ -15,24 +14,5 @@ public class FileView {
         return fileName.get();
     }
 
-    public SimpleStringProperty fileNameProperty() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName.set(fileName);
-    }
-
-    public String getFileSize() {
-        return fileSize.get();
-    }
-
-    public SimpleStringProperty fileSizeProperty() {
-        return fileSize;
-    }
-
-    public void setFileSize(String fileSize) {
-        this.fileSize.set(fileSize);
-    }
 }
 

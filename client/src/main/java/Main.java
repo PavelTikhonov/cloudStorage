@@ -9,11 +9,19 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("/sample.fxml"));
+
+        FXMLLoader loader = new FXMLLoader(Main.class.getResource("/sample.fxml"));
+        Parent root = loader.load();
+        Controller controller = loader.getController();
         primaryStage.setTitle("Cloud Storage");
         primaryStage.getIcons().add(new Image("/cloudsolutions.jpg"));
         primaryStage.setScene(new Scene(root, 600, 470));
         primaryStage.show();
+
+        primaryStage.setOnCloseRequest(event -> {
+            Network.sendMsg(new AuthClose(controller.getLogin()));
+        });
+
     }
 
 

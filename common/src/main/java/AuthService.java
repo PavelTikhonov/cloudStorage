@@ -24,31 +24,27 @@ public class AuthService {
     }
 
     public static String checkLoginAndPass(String login, String pass) throws SQLException {
-        String sql = String.format("SELECT nickname FROM main where " +
+        String sql = String.format("SELECT authState FROM main where " +
                 "login = '%s' and password = '%s'", login, pass);
         ResultSet rs = stmt.executeQuery(sql);
 
         if (rs.next()) {
-            return login;
+            if(rs.getString(1).equals("false")){
+                sql = String.format("UPDATE main  SET authState = '%s' where login = '%s'", "true", login);
+                stmt.executeUpdate(sql);
+                return login;
+            } else {
+                return null;
+            }
         }
         return null;
     }
 
-    public static String getBlacklistByNick(String nick) throws SQLException {
-        String sql = String.format("SELECT blacklist FROM main where nickname = '%s'", nick);
-        ResultSet rs = stmt.executeQuery(sql);
-
-        if (rs.next()) {
-            return rs.getString(1);
-        }
-        return null;
-    }
-
-    public static boolean setBlacklistByNick(String nick, String blacklist) throws SQLException {
-        String sql = String.format("SELECT blacklist FROM main where nickname = '%s'", nick);
+    public static boolean closeConnectByLogin(String login) throws SQLException {
+        String sql = String.format("SELECT authState FROM MAIN WHERE login = '%s'", login);
         ResultSet rs = stmt.executeQuery(sql);
         if (rs.next()) {
-            sql = String.format("UPDATE main  SET blacklist = '%s' where nickname = '%s'", blacklist, nick);
+            sql = String.format("UPDATE main  SET authState = '%s' where login = '%s'", "false", login);
             stmt.executeUpdate(sql);
             return true;
         } else {
