@@ -15,8 +15,12 @@ import java.util.Arrays;
 import java.util.ResourceBundle;
 
 
-public class Controller implements Initializable {
+public class MainController implements Initializable {
     public VBox rootPane;
+    @FXML
+    private ProgressBar loadBarProgress;
+    @FXML
+    private GridPane loadPanel;
     @FXML
     private GridPane upperPanel;
     @FXML
@@ -43,6 +47,7 @@ public class Controller implements Initializable {
     private String clientWay = "abs/client_storage/";
     private String tableEmpty = "Нет файлов в хранилище";
     private String login;
+    private boolean isExchangedFiles;
 
     private ObservableList<FileView> localStorageData = FXCollections.observableArrayList(
             new FileView(" ", " ")
@@ -83,7 +88,7 @@ public class Controller implements Initializable {
                     }
                     if (am instanceof FileMessage) {
                         FileMessage fm = (FileMessage) am;
-
+                        setVisibleLoadPanel(true);
                         boolean append = true;
                         if (fm.partNumber == 1) {
                             append = false;
@@ -92,6 +97,14 @@ public class Controller implements Initializable {
                         FileOutputStream fos = new FileOutputStream(clientWay + fm.filename, append);
                         fos.write(fm.data);
                         fos.close();
+                        double progress = (double) fm.partNumber / (double) fm.partsCount;
+
+                        loadBarProgress.progressProperty().setValue(progress);
+
+                        if (fm.partsCount == fm.partNumber) {
+                            loadBarProgress.progressProperty().setValue(0.0);
+                            setVisibleLoadPanel(false);
+                        }
 
                         refreshLocalFilesList();
                     }
@@ -154,46 +167,66 @@ public class Controller implements Initializable {
     }
 
     public void pressLocalRefreshBtn(ActionEvent actionEvent) {
+        if(isExchangedFiles){
+            return;
+        }
         refreshLocalFilesList();
     }
 
     public void pressLocalSendBtn(ActionEvent actionEvent) {
+        if(isExchangedFiles){
+            return;
+        }
         FileView fw = localStorage.getSelectionModel().getSelectedItem();
+
         if (fw != null) {
 
             if (!fw.getFileName().equals(tableEmpty)) {
-                File file = new File(clientWay + "/" + fw.getFileName());
-                int bufSize = 1024 * 1024 * 10;
-                int partsCount = new Long(file.length() / bufSize).intValue();
-                if (file.length() % bufSize != 0) {
-                    partsCount++;
-                }
-                FileMessage fmOut = new FileMessage(fw.getFileName(), -1, partsCount, new byte[bufSize]);
-                FileInputStream in = null;
-                try {
-                    in = new FileInputStream(file);
-                    for (int i = 0; i < partsCount; i++) {
-                        int readedBytes = in.read(fmOut.data);
-                        fmOut.partNumber = i + 1;
-                        if (readedBytes < bufSize) {
-                            fmOut.data = Arrays.copyOfRange(fmOut.data, 0, readedBytes);
-                        }
-                        Network.sendMsg(fmOut);
-                        System.out.println("Отправлена часть #" + (i + 1));
+                new Thread(() -> {
+                    isExchangedFiles = true;
+                    setVisibleLoadPanel(true);
+
+                    File file = new File(clientWay + "/" + fw.getFileName());
+
+                    int bufSize = 1024 * 1024 * 10;
+                    int partsCount = new Long(file.length() / bufSize).intValue();
+                    if (file.length() % bufSize != 0) {
+                        partsCount++;
                     }
-                    in.close();
+                    FileMessage fmOut = new FileMessage(fw.getFileName(), -1, partsCount, new byte[bufSize]);
+                    FileInputStream in = null;
+                    try {
+                        in = new FileInputStream(file);
+                        for (int i = 0; i < partsCount; i++) {
+                            int readedBytes = in.read(fmOut.data);
+                            fmOut.partNumber = i + 1;
+                            if (readedBytes < bufSize) {
+                                fmOut.data = Arrays.copyOfRange(fmOut.data, 0, readedBytes);
+                            }
+                            Network.sendMsg(fmOut);
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                            double progress = (double) fmOut.partNumber / (double) fmOut.partsCount;
+                            loadBarProgress.progressProperty().setValue(progress);
+                            if (fmOut.partsCount == fmOut.partNumber) {
+                                loadBarProgress.progressProperty().setValue(0.0);
+                                setVisibleLoadPanel(false);
+                                isExchangedFiles = false;
+                            }
+                        }
+                        in.close();
 
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
             }
-
-
         }
     }
 
     public void pressLocalDeleteBtn(ActionEvent actionEvent) {
+        if(isExchangedFiles){
+            return;
+        }
         FileView fw = localStorage.getSelectionModel().getSelectedItem();
         if(fw != null) {
             if(!fw.getFileName().equals(tableEmpty)) {
@@ -205,10 +238,16 @@ public class Controller implements Initializable {
     }
 
     public void pressCloudRefreshBtn(ActionEvent actionEvent){
+        if(isExchangedFiles){
+            return;
+        }
         Network.sendMsg(new FileList());
     }
 
     public void pressCloudSendBtn(ActionEvent actionEvent) {
+        if(isExchangedFiles){
+            return;
+        }
         FileView fw = cloudStorage.getSelectionModel().getSelectedItem();
         if(fw != null) {
             if(!fw.getFileName().equals("")) {
@@ -218,6 +257,9 @@ public class Controller implements Initializable {
     }
 
     public void pressCloudDeleteBtn(ActionEvent actionEvent) {
+        if(isExchangedFiles){
+            return;
+        }
         FileView fw = cloudStorage.getSelectionModel().getSelectedItem();
         if (fw != null) {
             if(!fw.getFileName().equals("")) {
@@ -252,6 +294,17 @@ public class Controller implements Initializable {
             return String.format("%1$.2f", (double)size / Math.pow(1024, 3)) + " ГБ";
         }
         return null;
+    }
+
+    public void pressStopLoadFileBtn(ActionEvent actionEvent) {
+    }
+
+    private void setVisibleLoadPanel(boolean state){
+        updateUI(()->{
+            loadPanel.setVisible(state);
+            loadPanel.setManaged(state);
+        });
+
     }
 }
 

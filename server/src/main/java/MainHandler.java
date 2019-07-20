@@ -62,7 +62,6 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 if (fm.partNumber == 1) {
                     append = false;
                 }
-                System.out.println(fm.partNumber + " / " + fm.partsCount);
                 FileOutputStream fos = new FileOutputStream(cloudStorageWay + login + "/" + fm.filename, append);
                 fos.write(fm.data);
                 fos.close();
