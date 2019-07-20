@@ -100,7 +100,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
         FileList fl = new FileList();
         if (files != null) {
             for (File f: files) {
-                fl.addFileDescriptionToList(new FileDescription(f.getName(), String.valueOf(f.length())));
+                fl.addFileDescriptionToList(new FileDescription(f.getName(), f.length()));
             }
         }
         return fl;

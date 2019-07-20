@@ -1,8 +1,8 @@
 public class FileDescription extends AbstractMessage {
     private String fileName;
-    private String fileSize;
+    private long fileSize;
 
-    public FileDescription(String fileName, String fileSize) {
+    public FileDescription(String fileName, long fileSize) {
         this.fileName = fileName;
         this.fileSize = fileSize;
     }
@@ -15,11 +15,11 @@ public class FileDescription extends AbstractMessage {
         this.fileName = fileName;
     }
 
-    public String getFileSize() {
+    public long getFileSize() {
         return fileSize;
     }
 
-    public void setFileSize(String fileSize) {
+    public void setFileSize(long fileSize) {
         this.fileSize = fileSize;
     }
 }

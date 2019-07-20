@@ -16,6 +16,7 @@ public class Server {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         AuthService.connect();
+        AuthService.resetAuthStatesByDefault();
 
         try {
             ServerBootstrap b = new ServerBootstrap();

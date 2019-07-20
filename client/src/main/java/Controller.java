@@ -1,4 +1,3 @@
-import io.netty.channel.ChannelFuture;
 import javafx.application.Platform;
 import javafx.collections.*;
 import javafx.event.ActionEvent;
@@ -12,9 +11,6 @@ import javafx.scene.layout.VBox;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 
@@ -53,16 +49,16 @@ public class Controller implements Initializable {
     );
 
     private ObservableList<FileView> cloudStorageData = FXCollections.observableArrayList(
-            new FileView(" ", " ")
+            new FileView(tableEmpty, tableEmpty)
     );
 
     private void initStorage(){
-        localFileName.setCellValueFactory(new PropertyValueFactory<>("fileName"));
-        localFileSize.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
+        localFileName.setCellValueFactory(new PropertyValueFactory<FileView, String >("fileName"));
+        localFileSize.setCellValueFactory(new PropertyValueFactory<FileView, String>("fileSize"));
         localStorage.setItems(localStorageData);
 
-        cloudFileName.setCellValueFactory(new PropertyValueFactory<>("fileName"));
-        cloudFileSize.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
+        cloudFileName.setCellValueFactory(new PropertyValueFactory<FileView, String>("fileName"));
+        cloudFileSize.setCellValueFactory(new PropertyValueFactory<FileView, String>("fileSize"));
         cloudStorage.setItems(cloudStorageData);
     }
 
@@ -104,7 +100,7 @@ public class Controller implements Initializable {
                         cloudStorage.getItems().clear();
                         if (fl.getFileList() != null) {
                             for (FileDescription f : fl.getFileList()) {
-                                cloudStorageData.add(new FileView(f.getFileName(), (f.getFileSize() + " B")));
+                                cloudStorageData.add(new FileView(f.getFileName(), getFileSize(f.getFileSize())));
                             }
                         }
                         if(isEmpty(cloudStorageData)){
@@ -140,7 +136,7 @@ public class Controller implements Initializable {
         File[] files = new File(clientWay).listFiles();
         if (files != null) {
             for (File f : files) {
-                localStorageData.add(new FileView(f.getName(), (String.valueOf(f.length()))));
+                localStorageData.add(new FileView(f.getName(), getFileSize(f.length())));
             }
         }
         if(isEmpty(localStorageData)){
@@ -243,6 +239,19 @@ public class Controller implements Initializable {
 
     public String getLogin() {
         return login;
+    }
+
+    private String getFileSize(long size){
+        if(size < 1024){
+            return String.valueOf(size) + " Б";
+        } else if (size < Math.pow(1024, 2)){
+            return String.format("%1$.2f", (double)size / Math.pow(1024, 1)) + " кБ";
+        } else if  (size < Math.pow(1024, 3)){
+            return String.format("%1$.2f", (double)size / Math.pow(1024, 2)) + " МБ";
+        } else if  (size < Math.pow(1024, 4)){
+            return String.format("%1$.2f", (double)size / Math.pow(1024, 3)) + " ГБ";
+        }
+        return null;
     }
 }
 

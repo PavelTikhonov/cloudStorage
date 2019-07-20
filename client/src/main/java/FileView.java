@@ -14,6 +14,16 @@ public class FileView {
         return fileName.get();
     }
 
+    public SimpleStringProperty fileNameProperty() {
+        return fileName;
+    }
 
+    public String getFileSize() {
+        return fileSize.get();
+    }
+
+    public SimpleStringProperty fileSizeProperty() {
+        return fileSize;
+    }
 }
 
