@@ -19,7 +19,9 @@ public class Main extends Application {
         primaryStage.show();
 
         primaryStage.setOnCloseRequest(event -> {
-            Network.sendMsg(new AuthClose(controller.getLogin()));
+            if (Network.getSocket() != null) {
+                Network.sendMsg(new AuthClose(controller.getLogin()));
+            }
         });
 
     }

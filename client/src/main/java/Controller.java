@@ -1,3 +1,4 @@
+import io.netty.channel.ChannelFuture;
 import javafx.application.Platform;
 import javafx.collections.*;
 import javafx.event.ActionEvent;
@@ -9,12 +10,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 
@@ -44,6 +45,7 @@ public class Controller implements Initializable {
     private Label auth;
 
     private String clientWay = "abs/client_storage/";
+    private String tableEmpty = "Нет файлов в хранилище";
     private String login;
 
     private ObservableList<FileView> localStorageData = FXCollections.observableArrayList(
@@ -85,7 +87,16 @@ public class Controller implements Initializable {
                     }
                     if (am instanceof FileMessage) {
                         FileMessage fm = (FileMessage) am;
-                        Files.write(Paths.get(clientWay + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
+
+                        boolean append = true;
+                        if (fm.partNumber == 1) {
+                            append = false;
+                        }
+                        System.out.println(fm.partNumber + " / " + fm.partsCount);
+                        FileOutputStream fos = new FileOutputStream(clientWay + fm.filename, append);
+                        fos.write(fm.data);
+                        fos.close();
+
                         refreshLocalFilesList();
                     }
                     if (am instanceof FileList) {
@@ -97,7 +108,7 @@ public class Controller implements Initializable {
                             }
                         }
                         if(isEmpty(cloudStorageData)){
-                            cloudStorageData.add(new FileView("", ""));
+                            cloudStorageData.add(new FileView(tableEmpty, ""));
                         }
                         cloudStorage.setItems(cloudStorageData);
                     }
@@ -115,6 +126,7 @@ public class Controller implements Initializable {
     }
 
     private void setAuthorized() {
+        Network.sendMsg(new FileList());
         auth.setVisible(false);
         auth.setManaged(false);
         upperPanel.setVisible(false);
@@ -128,11 +140,11 @@ public class Controller implements Initializable {
         File[] files = new File(clientWay).listFiles();
         if (files != null) {
             for (File f : files) {
-                localStorageData.add(new FileView(f.getName(), (String.valueOf(f.length())) + " B"));
+                localStorageData.add(new FileView(f.getName(), (String.valueOf(f.length()))));
             }
         }
         if(isEmpty(localStorageData)){
-            localStorageData.add(new FileView("", ""));
+            localStorageData.add(new FileView(tableEmpty, ""));
         }
         localStorage.setItems(localStorageData);
     }
@@ -151,21 +163,44 @@ public class Controller implements Initializable {
 
     public void pressLocalSendBtn(ActionEvent actionEvent) {
         FileView fw = localStorage.getSelectionModel().getSelectedItem();
-        if(fw != null) {
-            try {
-                if(!fw.getFileName().equals("")) {
-                    Network.sendMsg(new FileMessage(Paths.get(clientWay + fw.getFileName())));
+        if (fw != null) {
+
+            if (!fw.getFileName().equals(tableEmpty)) {
+                File file = new File(clientWay + "/" + fw.getFileName());
+                int bufSize = 1024 * 1024 * 10;
+                int partsCount = new Long(file.length() / bufSize).intValue();
+                if (file.length() % bufSize != 0) {
+                    partsCount++;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+                FileMessage fmOut = new FileMessage(fw.getFileName(), -1, partsCount, new byte[bufSize]);
+                FileInputStream in = null;
+                try {
+                    in = new FileInputStream(file);
+                    for (int i = 0; i < partsCount; i++) {
+                        int readedBytes = in.read(fmOut.data);
+                        fmOut.partNumber = i + 1;
+                        if (readedBytes < bufSize) {
+                            fmOut.data = Arrays.copyOfRange(fmOut.data, 0, readedBytes);
+                        }
+                        Network.sendMsg(fmOut);
+                        System.out.println("Отправлена часть #" + (i + 1));
+                    }
+                    in.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             }
+
+
         }
     }
 
     public void pressLocalDeleteBtn(ActionEvent actionEvent) {
         FileView fw = localStorage.getSelectionModel().getSelectedItem();
         if(fw != null) {
-            if(!fw.getFileName().equals("")) {
+            if(!fw.getFileName().equals(tableEmpty)) {
                 File file = new File(clientWay + fw.getFileName());
                 file.delete();
                 refreshLocalFilesList();
