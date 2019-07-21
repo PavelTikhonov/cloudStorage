@@ -1,12 +1,16 @@
 
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 
 public class MainHandler extends ChannelInboundHandlerAdapter {
 
@@ -19,8 +23,25 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             if (msg instanceof FileRequest) {
                 FileRequest fr = (FileRequest) msg;
                 if (Files.exists(Paths.get(cloudStorageWay + login + "/" + fr.getFilename()))) {
-                    FileMessage fm = new FileMessage(Paths.get(cloudStorageWay + login + "/" + fr.getFilename()));
-                    ctx.writeAndFlush(fm);
+
+                    File file = new File(cloudStorageWay + login + "/" + fr.getFilename());
+                    int bufSize = 1024 * 1024 * 10;
+                    int partsCount = new Long(file.length() / bufSize).intValue();
+                    if (file.length() % bufSize != 0) {
+                        partsCount++;
+                    }
+                    FileMessage fmOut = new FileMessage(fr.getFilename(), -1, partsCount, new byte[bufSize]);
+                    FileInputStream in = new FileInputStream(file);
+                    for (int i = 0; i < partsCount; i++) {
+                        int readedBytes = in.read(fmOut.data);
+                        fmOut.partNumber = i + 1;
+                        if (readedBytes < bufSize) {
+                            fmOut.data = Arrays.copyOfRange(fmOut.data, 0, readedBytes);
+                        }
+                        ChannelFuture channelFuture = ctx.writeAndFlush(fmOut);
+                        System.out.println("Отправлена часть #" + (i + 1));
+                    }
+                    in.close();
                 }
             }
             if (msg instanceof FileList){
@@ -36,7 +57,14 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
             }
             if (msg instanceof FileMessage) {
                 FileMessage fm = (FileMessage) msg;
-                Files.write(Paths.get(cloudStorageWay + login + "/" + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
+
+                boolean append = true;
+                if (fm.partNumber == 1) {
+                    append = false;
+                }
+                FileOutputStream fos = new FileOutputStream(cloudStorageWay + login + "/" + fm.filename, append);
+                fos.write(fm.data);
+                fos.close();
                 FileList fl = getFileList();
                 ctx.writeAndFlush(fl);
             }
@@ -71,7 +99,7 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
         FileList fl = new FileList();
         if (files != null) {
             for (File f: files) {
-                fl.addFileDescriptionToList(new FileDescription(f.getName(), String.valueOf(f.length())));
+                fl.addFileDescriptionToList(new FileDescription(f.getName(), f.length()));
             }
         }
         return fl;

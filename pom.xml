@@ -29,7 +29,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>8.6.0</version>
                 <configuration>
-                    <mainClass>lesson6.NetChat.client.Main</mainClass>
+                    <mainClass>lesson6.NetChat.client.MainStage</mainClass>
                 </configuration>
             </plugin>
         </plugins>
@@ -41,6 +41,14 @@
             <artifactId>netty-all</artifactId>
             <version>4.1.25.Final</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.flatbuffers/flatbuffers-java -->
+        <dependency>
+            <groupId>com.google.flatbuffers</groupId>
+            <artifactId>flatbuffers-java</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+
     </dependencies>
 
 </project>

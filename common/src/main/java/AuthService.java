@@ -52,5 +52,16 @@ public class AuthService {
         }
     }
 
+    public static boolean resetAuthStatesByDefault() throws SQLException {
+        String sql = "SELECT authState FROM MAIN";
+        ResultSet rs = stmt.executeQuery(sql);
+        if (rs.next()) {
+            sql = String.format("UPDATE main  SET authState = '%s'", "false");
+            stmt.executeUpdate(sql);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 }
