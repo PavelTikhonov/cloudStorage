@@ -70,7 +70,6 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initStorage();
-        refreshLocalFilesList();
 
         Network.start();
 
@@ -83,6 +82,12 @@ public class MainController implements Initializable {
                         AuthResult ay = ((AuthResult) am);
                         if(ay.getResult().equals("ok")){
                             this.login = loginField.getText();
+                            File file = new File(clientWay + login);
+                            if(!(file).exists())
+                            {
+                                file.mkdir();
+                            }
+                            refreshLocalFilesList();
                             setAuthorized();
                         }
                     }
@@ -94,7 +99,7 @@ public class MainController implements Initializable {
                             append = false;
                         }
                         System.out.println(fm.partNumber + " / " + fm.partsCount);
-                        FileOutputStream fos = new FileOutputStream(clientWay + fm.filename, append);
+                        FileOutputStream fos = new FileOutputStream(clientWay + login + "/" + fm.filename, append);
                         fos.write(fm.data);
                         fos.close();
                         double progress = (double) fm.partNumber / (double) fm.partsCount;
@@ -146,7 +151,7 @@ public class MainController implements Initializable {
 
     private void refreshLocalFilesList() {
         localStorage.getItems().clear();
-        File[] files = new File(clientWay).listFiles();
+        File[] files = new File(clientWay + login).listFiles();
         if (files != null) {
             for (File f : files) {
                 localStorageData.add(new FileView(f.getName(), getFileSize(f.length())));
@@ -186,7 +191,7 @@ public class MainController implements Initializable {
                     isExchangedFiles = true;
                     setVisibleLoadPanel(true);
 
-                    File file = new File(clientWay + "/" + fw.getFileName());
+                    File file = new File(clientWay + login + "/" + fw.getFileName());
 
                     int bufSize = 1024 * 1024 * 10;
                     int partsCount = new Long(file.length() / bufSize).intValue();
@@ -230,7 +235,7 @@ public class MainController implements Initializable {
         FileView fw = localStorage.getSelectionModel().getSelectedItem();
         if(fw != null) {
             if(!fw.getFileName().equals(tableEmpty)) {
-                File file = new File(clientWay + fw.getFileName());
+                File file = new File(clientWay + login + "/" + fw.getFileName());
                 file.delete();
                 refreshLocalFilesList();
             }
