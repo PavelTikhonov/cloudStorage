@@ -1,5 +1,6 @@
 
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
@@ -38,8 +39,9 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                         if (readedBytes < bufSize) {
                             fmOut.data = Arrays.copyOfRange(fmOut.data, 0, readedBytes);
                         }
-                        ChannelFuture channelFuture = ctx.writeAndFlush(fmOut);
-                        System.out.println("Отправлена часть #" + (i + 1));
+                        ctx.writeAndFlush(fmOut);
+                        System.out.println("Отправлена часть #" + (i + 1) + " to " + login);
+
                     }
                     in.close();
                 }

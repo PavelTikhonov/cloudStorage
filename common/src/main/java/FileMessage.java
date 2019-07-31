@@ -13,5 +13,4 @@ public class FileMessage extends AbstractMessage implements Serializable {
         this.data = data;
     }
 
-
 }
